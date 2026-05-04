@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% if is_new %}Tạo Báo Giá Mới{% else %}Chỉnh Sửa Báo Giá{% endif %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="app-header">
+  <div class="container header-inner">
+    <div class="logo-area">
+      <a href="/" class="back-btn">← Danh sách</a>
+      <h1>{% if is_new %}Tạo Báo Giá Mới{% else %}Chỉnh Sửa Báo Giá{% endif %}</h1>
+    </div>
+    <div class="header-actions">
+      <button onclick="saveQuote()" class="btn btn-primary">💾 Lưu</button>
+      {% if not is_new %}
+      <a href="/preview/{{ quote.id }}" class="btn btn-secondary">👁 Xem trước</a>
+      <a href="/pdf/{{ quote.id }}" class="btn btn-success">⬇ Xuất PDF</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="container edit-main">
+  <form id="quoteForm">
+    <input type="hidden" id="quoteId" value="{{ quote.id }}">
+
+    <!-- ── THÔNG TIN CÔNG TY ───────────────────────────────────── -->
+    <section class="form-section">
+      <h2 class="section-title">🏢 Thông Tin Công Ty</h2>
+      <div class="form-grid cols-2">
+        <div class="form-group span-2">
+          <label>Tên công ty</label>
+          <input type="text" id="cong_ty" value="{{ quote.cong_ty }}" placeholder="Tên công ty">
+        </div>
+        <div class="form-group span-2">
+          <label>Địa chỉ công ty</label>
+          <input type="text" id="dia_chi_ct" value="{{ quote.dia_chi_ct }}" placeholder="Địa chỉ">
+        </div>
+        <div class="form-group">
+          <label>Điện thoại</label>
+          <input type="text" id="dien_thoai_ct" value="{{ quote.dien_thoai_ct }}" placeholder="0909 xxx xxx">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="text" id="email_ct" value="{{ quote.email_ct }}" placeholder="info@company.com">
+        </div>
+      </div>
+    </section>
+
+    <!-- ── THÔNG TIN BÁO GIÁ ──────────────────────────────────── -->
+    <section class="form-section">
+      <h2 class="section-title">📋 Thông Tin Báo Giá</h2>
+      <div class="form-grid cols-2">
+        <div class="form-group">
+          <label>Số báo giá</label>
+          <input type="text" id="so_bao_gia" value="{{ quote.so_bao_gia }}" placeholder="BG-2024-001">
+        </div>
+        <div class="form-group">
+          <label>Ngày lập</label>
+          <input type="text" id="ngay" value="{{ quote.ngay }}" placeholder="dd/mm/yyyy">
+        </div>
+      </div>
+    </section>
+
+    <!-- ── THÔNG TIN KHÁCH HÀNG ───────────────────────────────── -->
+    <section class="form-section">
+      <h2 class="section-title">👤 Thông Tin Khách Hàng</h2>
+      <div class="form-grid cols-2">
+        <div class="form-group">
+          <label>Tên khách hàng / đơn vị</label>
+          <input type="text" id="khach_hang" value="{{ quote.khach_hang }}" placeholder="Họ tên hoặc công ty">
+        </div>
+        <div class="form-group">
+          <label>Điện thoại</label>
+          <input type="text" id="dien_thoai" value="{{ quote.dien_thoai }}" placeholder="0909 xxx xxx">
+        </div>
+        <div class="form-group span-2">
+          <label>Địa chỉ lắp đặt</label>
+          <input type="text" id="dia_chi" value="{{ quote.dia_chi }}" placeholder="Địa chỉ">
+        </div>
+      </div>
+    </section>
+
+    <!-- ── BẢNG HẠNG MỤC ──────────────────────────────────────── -->
+    <section class="form-section">
+      <h2 class="section-title">📐 Danh Sách Hạng Mục</h2>
+      <div class="table-wrapper">
+        <table id="itemsTable" class="items-table">
+          <thead>
+            <tr>
+              <th style="width:36px">STT</th>
+              <th>Hạng mục / Mô tả</th>
+              <th style="width:110px">Kích thước (m×m)</th>
+              <th style="width:60px">SL</th>
+              <th style="width:70px">Đơn vị</th>
+              <th style="width:80px">Diện tích (m²)</th>
+              <th style="width:110px">Đơn giá (đ)</th>
+              <th style="width:120px">Thành tiền (đ)</th>
+              <th style="width:36px"></th>
+            </tr>
+          </thead>
+          <tbody id="itemsBody">
+            {% for item in quote['items'] %}
+            <tr class="item-row">
+              <td class="td-stt"></td>
+              <td><input type="text" class="ipt ipt-hangmuc" value="{{ item.hang_muc }}" placeholder="Tên hạng mục"></td>
+              <td><input type="text" class="ipt ipt-kichthuoc" value="{{ item.kich_thuoc }}" placeholder="1.2x2.4"></td>
+              <td><input type="number" class="ipt ipt-soluong" value="{{ item.so_luong }}" min="0" step="0.01"></td>
+              <td>
+                <select class="ipt ipt-donvi">
+                  <option {% if item.don_vi == 'm²' %}selected{% endif %}>m²</option>
+                  <option {% if item.don_vi == 'bộ' %}selected{% endif %}>bộ</option>
+                  <option {% if item.don_vi == 'cái' %}selected{% endif %}>cái</option>
+                  <option {% if item.don_vi == 'mét' %}selected{% endif %}>mét</option>
+                  <option {% if item.don_vi == 'cây' %}selected{% endif %}>cây</option>
+                </select>
+              </td>
+              <td><input type="number" class="ipt ipt-dientich" value="{{ item.dien_tich }}" min="0" step="0.001" placeholder="Tự tính"></td>
+              <td><input type="number" class="ipt ipt-dongia" value="{{ item.don_gia }}" min="0" step="1000"></td>
+              <td><input type="number" class="ipt ipt-thanhtien" value="{{ item.thanh_tien }}" min="0" step="1000" readonly></td>
+              <td><button type="button" class="btn-del-row" onclick="deleteRow(this)" title="Xóa hàng">✕</button></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-outline" onclick="addRow()" style="margin-top:.5rem">＋ Thêm hàng</button>
+    </section>
+
+    <!-- ── TỔNG CỘNG ──────────────────────────────────────────── -->
+    <section class="form-section totals-section">
+      <div class="totals-grid">
+        <div>
+          <label>Tổng diện tích (m²)</label>
+          <input type="text" id="tong_dien_tich" readonly class="total-field">
+        </div>
+        <div>
+          <label>Tổng công (chưa VAT)</label>
+          <input type="text" id="tong_chua_vat" readonly class="total-field">
+        </div>
+        <div>
+          <label>VAT (%)</label>
+          <input type="number" id="vat" value="{{ quote.vat }}" min="0" max="100" step="1" class="total-field" oninput="recalc()">
+        </div>
+        <div>
+          <label>Tiền VAT</label>
+          <input type="text" id="tong_vat" readonly class="total-field">
+        </div>
+        <div class="grand-total">
+          <label>TỔNG CỘNG THANH TOÁN</label>
+          <input type="text" id="tong_cong" readonly class="total-field grand">
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ĐIỀU KHOẢN & GHI CHÚ ───────────────────────────────── -->
+    <section class="form-section">
+      <div class="form-grid cols-2">
+        <div class="form-group">
+          <label>Điều khoản thanh toán</label>
+          <textarea id="dieu_khoan" rows="4" placeholder="Nhập điều khoản thanh toán...">{{ quote.dieu_khoan }}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Ghi chú</label>
+          <textarea id="ghi_chu" rows="4" placeholder="Ghi chú thêm...">{{ quote.ghi_chu }}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Người lập báo giá</label>
+          <input type="text" id="nguoi_lap" value="{{ quote.nguoi_lap }}" placeholder="Họ tên người lập">
+        </div>
+      </div>
+    </section>
+
+  </form><!-- /quoteForm -->
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script>
+  // Resequence STT on load
+  resequence();
+  recalc();
+</script>
+</body>
+</html>
