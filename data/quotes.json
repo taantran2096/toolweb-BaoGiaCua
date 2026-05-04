@@ -27,5 +27,34 @@
     ],
     "created_at": "2026-05-04T17:55:20.855024",
     "updated_at": "2026-05-04T17:55:20.855024"
+  },
+  {
+    "id": "35b0f4c5",
+    "so_bao_gia": "BG-TEST",
+    "ngay": "01/01/2024",
+    "cong_ty": "Test Co",
+    "dia_chi_ct": "",
+    "dien_thoai_ct": "",
+    "email_ct": "",
+    "khach_hang": "KH Test",
+    "dien_thoai": "",
+    "dia_chi": "",
+    "vat": 10,
+    "dieu_khoan": "",
+    "ghi_chu": "",
+    "nguoi_lap": "",
+    "items": [
+      {
+        "hang_muc": "Cua sat",
+        "kich_thuoc": "1.2x2.4",
+        "so_luong": 2,
+        "don_vi": "m2",
+        "dien_tich": 5.76,
+        "don_gia": 500000,
+        "thanh_tien": 2880000
+      }
+    ],
+    "created_at": "2026-05-04T17:57:00.220456",
+    "updated_at": "2026-05-04T17:57:00.220456"
   }
 ]
