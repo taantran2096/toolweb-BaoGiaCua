@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Quote List</title>
+</head>
+<body>
+    <h1>Quotes</h1>
+    <ul>
+        {% for quote in quotes %}
+            <li>{{ quote }} <a href="/edit_quote/{{ loop.index0 }}">Edit</a> <a href="/export_pdf/{{ loop.index0 }}">Export</a></li>
+        {% endfor %}
+    </ul>
+    <form action="/add_quote" method="post">
+        <input type="text" name="quote" />
+        <input type="submit" value="Add Quote" />
+    </form>
+</body>
+</html>
