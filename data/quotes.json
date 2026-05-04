@@ -1,0 +1,31 @@
+[
+  {
+    "id": "8e84fbd6",
+    "so_bao_gia": "BG-TEST",
+    "ngay": "01/01/2024",
+    "cong_ty": "Test",
+    "dia_chi_ct": "",
+    "dien_thoai_ct": "",
+    "email_ct": "",
+    "khach_hang": "KH Test",
+    "dien_thoai": "",
+    "dia_chi": "",
+    "vat": 10,
+    "dieu_khoan": "",
+    "ghi_chu": "",
+    "nguoi_lap": "",
+    "items": [
+      {
+        "hang_muc": "Test",
+        "kich_thuoc": "",
+        "so_luong": 1,
+        "don_vi": "m2",
+        "dien_tich": 0,
+        "don_gia": 0,
+        "thanh_tien": 0
+      }
+    ],
+    "created_at": "2026-05-04T17:55:20.855024",
+    "updated_at": "2026-05-04T17:55:20.855024"
+  }
+]

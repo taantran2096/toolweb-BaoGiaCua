@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xem Trước Báo Giá – {{ quote.so_bao_gia }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+  body { background: #e5e7eb; }
+  .preview-toolbar {
+    position: sticky; top: 0; z-index: 100;
+    background: #1a3a5c; color: white;
+    padding: .6rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  }
+  .preview-toolbar a, .preview-toolbar span { color: white; text-decoration: none; }
+  .preview-toolbar .spacer { flex: 1; }
+  .a4-page {
+    width: 210mm; min-height: 297mm;
+    margin: 2rem auto;
+    background: white;
+    padding: 14mm 15mm;
+    box-shadow: 0 4px 24px rgba(0,0,0,.2);
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    font-size: 9pt;
+    line-height: 1.4;
+    color: #111;
+  }
+
+  /* ── Header ── */
+  .doc-header { display: flex; align-items: center; border-bottom: 2px solid #1a3a5c; padding-bottom: 8px; margin-bottom: 10px; }
+  .doc-header .logo-wrap { width: 60px; flex-shrink: 0; }
+  .doc-header .logo-wrap img { max-width: 55px; max-height: 45px; object-fit: contain; }
+  .doc-header .cty-info { flex: 1; padding-left: 8px; }
+  .doc-header .cty-info strong { color: #1a3a5c; font-size: 10pt; }
+  .doc-header .cty-info p  { margin: 1px 0; font-size: 8pt; }
+  .doc-header .title-block { text-align: center; min-width: 130px; }
+  .doc-header .title-block h2 { margin:0; font-size: 15pt; color: #1a3a5c; font-weight: 900; }
+  .doc-header .title-block p  { margin: 0; font-size: 9pt; color: #2563a8; font-weight: 700; }
+  .doc-header .meta-block { min-width: 80px; text-align: right; font-size: 8pt; }
+  .doc-header .meta-block strong { color: #1a3a5c; }
+
+  /* ── Customer info ── */
+  .customer-box { border: 1px solid #9ca3af; margin-bottom: 10px; }
+  .customer-box .cx-header { background: #dbeafe; padding: 3px 6px; font-weight: 700; font-size: 9pt; color: #1a3a5c; }
+  .customer-box table { width: 100%; border-collapse: collapse; }
+  .customer-box td { padding: 3px 6px; font-size: 8.5pt; border-top: 1px solid #e5e7eb; }
+  .customer-box td:first-child { color: #6b7280; width: 80px; }
+
+  /* ── Items table ── */
+  .items-tbl { width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: 8pt; }
+  .items-tbl thead tr { background: #1a3a5c; color: white; }
+  .items-tbl thead th { padding: 5px 4px; text-align: center; font-weight: 700; font-size: 7.5pt; border: 1px solid #374151; }
+  .items-tbl tbody td { padding: 4px; border: 1px solid #d1d5db; }
+  .items-tbl tbody tr:nth-child(even) { background: #f9fafb; }
+  .items-tbl .num { text-align: right; }
+  .items-tbl .ctr { text-align: center; }
+
+  /* ── Totals ── */
+  .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+  .totals-inner { width: 260px; }
+  .tot-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 8.5pt; border-bottom: 1px solid #f3f4f6; }
+  .tot-row .lbl { color: #374151; }
+  .tot-row .val { font-weight: 600; color: #1a3a5c; }
+  .grand-bar {
+    background: #1a3a5c; color: white;
+    display: flex; justify-content: space-between;
+    padding: 6px 8px; margin-bottom: 10px;
+    border-radius: 4px;
+  }
+  .grand-bar .lbl { font-weight: 700; font-size: 9.5pt; }
+  .grand-bar .val { font-weight: 700; font-size: 9.5pt; color: #f59e0b; }
+
+  /* ── Terms & notes ── */
+  .bottom-cols { display: flex; gap: 12px; margin-bottom: 10px; font-size: 8pt; }
+  .bottom-cols .col { flex: 1; }
+  .bottom-cols .col h4 { margin: 0 0 4px; color: #1a3a5c; font-size: 8.5pt; }
+  .bottom-cols .col ul { margin: 0; padding-left: 14px; }
+  .bottom-cols .col li { margin-bottom: 2px; }
+
+  /* ── Signature ── */
+  .sign-row { display: flex; justify-content: space-around; margin-top: 12px; }
+  .sign-col { text-align: center; width: 30%; font-size: 8pt; }
+  .sign-col .title { font-weight: 700; color: #1a3a5c; font-size: 8.5pt; }
+  .sign-col .gap { height: 40px; }
+  .sign-col .name { font-weight: 700; border-top: 1px dashed #9ca3af; padding-top: 4px; margin-top: 4px; font-size: 8.5pt; }
+
+  /* ── Footer ── */
+  .doc-footer { margin-top: 10px; border-top: 1px solid #d1d5db; padding-top: 5px; text-align: center; font-size: 7pt; color: #9ca3af; }
+
+  @media print {
+    body { background: white; }
+    .preview-toolbar { display: none; }
+    .a4-page { margin: 0; box-shadow: none; padding: 10mm 12mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="preview-toolbar">
+  <a href="/edit/{{ quote.id }}">← Quay lại sửa</a>
+  <span class="spacer"></span>
+  <a href="/pdf/{{ quote.id }}" class="btn btn-success">⬇ Tải PDF</a>
+  <button onclick="window.print()" class="btn btn-outline" style="color:white;border-color:white">🖨 In</button>
+</div>
+
+<div class="a4-page">
+
+  <!-- ── HEADER ── -->
+  <div class="doc-header">
+    <div class="logo-wrap">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" onerror="this.style.display='none'">
+    </div>
+    <div class="cty-info">
+      <strong>{{ quote.cong_ty }}</strong>
+      <p>Địa chỉ: {{ quote.dia_chi_ct }}</p>
+      <p>ĐT: {{ quote.dien_thoai_ct }} &nbsp;|&nbsp; Email: {{ quote.email_ct }}</p>
+    </div>
+    <div class="title-block">
+      <h2>BẢNG BÁO GIÁ</h2>
+      <p>CỬA &amp; RÀO CNC</p>
+    </div>
+    <div class="meta-block">
+      <p><strong>Số BG:</strong> {{ quote.so_bao_gia }}</p>
+      <p><strong>Ngày:</strong> {{ quote.ngay }}</p>
+    </div>
+  </div>
+
+  <!-- ── KHÁCH HÀNG ── -->
+  <div class="customer-box">
+    <div class="cx-header">THÔNG TIN KHÁCH HÀNG</div>
+    <table>
+      <tr><td>Khách hàng:</td><td><strong>{{ quote.khach_hang }}</strong></td>
+          <td>Điện thoại:</td><td><strong>{{ quote.dien_thoai }}</strong></td></tr>
+      <tr><td>Địa chỉ:</td><td colspan="3"><strong>{{ quote.dia_chi }}</strong></td></tr>
+    </table>
+  </div>
+
+  <!-- ── BẢNG HẠNG MỤC ── -->
+  <table class="items-tbl">
+    <thead>
+      <tr>
+        <th style="width:28px">STT</th>
+        <th>Hạng mục / Mô tả</th>
+        <th style="width:90px">Kích thước (m×m)</th>
+        <th style="width:36px">SL</th>
+        <th style="width:36px">ĐVT</th>
+        <th style="width:60px">Diện tích (m²)</th>
+        <th style="width:80px">Đơn giá (đ)</th>
+        <th style="width:90px">Thành tiền (đ)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in quote['items'] %}
+      <tr>
+        <td class="ctr">{{ loop.index }}</td>
+        <td>{{ item.hang_muc }}</td>
+        <td class="ctr">{{ item.kich_thuoc }}</td>
+        <td class="ctr">{{ item.so_luong }}</td>
+        <td class="ctr">{{ item.don_vi }}</td>
+        <td class="num">{{ item.dien_tich if item.dien_tich else '' }}</td>
+        <td class="num">{{ '{:,.0f}'.format(item.don_gia|float).replace(',', '.') }}</td>
+        <td class="num"><strong>{{ '{:,.0f}'.format(item.thanh_tien|float).replace(',', '.') }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- ── TOTALS ── -->
+  <div class="totals-wrap">
+    <div class="totals-inner">
+      <div class="tot-row"><span class="lbl">Tổng diện tích:</span><span class="val">{{ quote.tong_dien_tich }} m²</span></div>
+      <div class="tot-row"><span class="lbl">Tổng công (chưa VAT):</span><span class="val">{{ '{:,.0f}'.format(quote.tong_chua_vat|float).replace(',', '.') }} đ</span></div>
+      <div class="tot-row"><span class="lbl">VAT ({{ quote.vat }}%):</span><span class="val">{{ '{:,.0f}'.format(quote.tong_vat|float).replace(',', '.') }} đ</span></div>
+    </div>
+  </div>
+  <div class="grand-bar">
+    <span class="lbl">TỔNG CỘNG THANH TOÁN:</span>
+    <span class="val">{{ '{:,.0f}'.format(quote.tong_cong|float).replace(',', '.') }} đ</span>
+  </div>
+
+  <!-- ── ĐIỀU KHOẢN + GHI CHÚ ── -->
+  <div class="bottom-cols">
+    <div class="col">
+      <h4>ĐIỀU KHOẢN THANH TOÁN:</h4>
+      <ul>
+        {% for line in (quote.dieu_khoan or '').split('\n') %}
+          {% if line.strip() %}<li>{{ line.strip() }}</li>{% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+    {% if quote.ghi_chu %}
+    <div class="col">
+      <h4>GHI CHÚ:</h4>
+      <ul>
+        {% for line in quote.ghi_chu.split('\n') %}
+          {% if line.strip() %}<li>{{ line.strip() }}</li>{% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── CHỮ KÝ ── -->
+  <div class="sign-row">
+    <div class="sign-col">
+      <div class="title">Khách hàng xác nhận</div>
+      <div class="gap"></div>
+      <div class="name">(Ký và ghi rõ họ tên)</div>
+    </div>
+    <div class="sign-col">
+      <div class="title">TP.HCM, ngày {{ quote.ngay }}</div>
+      <div class="title">Người lập báo giá</div>
+      <div class="gap"></div>
+      <div class="name">{{ quote.nguoi_lap or '&nbsp;' }}</div>
+      <small>(Ký và ghi rõ họ tên)</small>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="doc-footer">
+    Báo giá này có hiệu lực trong vòng 30 ngày kể từ ngày lập. Mọi thắc mắc xin liên hệ số điện thoại trên.
+  </div>
+
+</div><!-- /.a4-page -->
+</body>
+</html>
